@@ -1,7 +1,0 @@
-total 152
-drwxr-xr-x  6 seocheong-un  staff    192  6 29 22:38 .
-drwxr-xr-x  8 seocheong-un  staff    256  6 23 17:34 ..
--rw-r--r--  1 seocheong-un  staff   1303  6 29 22:44 app.py
--rw-r--r--  1 seocheong-un  staff      0  6 29 22:44 file.txt
--rwxrwxrwx  1 seocheong-un  staff     73  6 29 22:34 script.sh
--rw-r--r--  1 seocheong-un  staff  66572  6 29 22:38 terraform.txt
