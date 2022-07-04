@@ -5,27 +5,25 @@ module "eks" {
   cluster_version = "1.20"
   subnets         = module.vpc.private_subnets
 
+  cluster_endpoint_private_access = false
+  cluster_endpoint_public_access = true
+
   vpc_id = module.vpc.vpc_id
+  
 
-  workers_group_defaults = {
-    root_volume_type = "gp2"
-  }
+  /*
+  node_groups are aws eks managed nodes whereas worker_groups are self managed nodes. 
+  Among many one advantage of worker_groups is that you can use your custom AMI for the nodes.
+  */
 
-  worker_groups = [
+  node_groups = [
     {
-      name                          = "worker-group-1"
-      instance_type                 = "t2.small"
+      name          = "worker-group-1"
+      instance_type = "t2.small"
       additional_userdata           = "echo foo bar"
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
-      asg_desired_capacity          = 2
-    },
-    {
-      name                          = "worker-group-2"
-      instance_type                 = "t2.medium"
-      additional_userdata           = "echo foo bar"
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-      asg_desired_capacity          = 1
-    },
+      source_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
+      desired_capacity          = 1
+    }
   ]
 }
 
