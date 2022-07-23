@@ -10,13 +10,12 @@ module "eks" {
 
   vpc_id = module.vpc.vpc_id
 
-
   /*
   node_groups are aws eks managed nodes whereas worker_groups are self managed nodes. 
   Among many one advantage of worker_groups is that you can use your custom AMI for the nodes.
   */
 
-   workers_group_defaults = {
+  workers_group_defaults = {
     root_volume_type = "gp2"
   }
 

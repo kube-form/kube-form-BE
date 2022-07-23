@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-ns
+  labels:
+    name: nginx-ns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mario
+  namespace: nginx-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mario_label
+  template:
+    metadata:
+      labels:
+        app: mario_label
+    spec:
+      containers:
+        - name: supermario
+          image: pengbai/docker-supermario
+          ports:
+            - name: web
+              containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game
+  namespace: nginx-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: game_label
+  template:
+    metadata:
+      labels:
+        app: game_label
+    spec:
+      containers:
+        - name: game-2048
+          image: alexwhen/docker-2048
+          ports:
+            - name: web
+              containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-nlb
+  namespace: nginx-ns
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  type: LoadBalancer
+  selector:
+    app: mario_label
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: web
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-nlb2
+  namespace: nginx-ns
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  type: LoadBalancer
+  selector:
+    app: game_label
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: web
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: kubeform-ingress
+#   namespace: nginx-ns
+#   annotations:
+#     nginx.ingress.kubernetes.io/use-regax: "true"
+#     kubernetes.io/ingress.class: "nginx"
+# spec:
+#   tls:
+#   - hosts:
+#     - af1997ebca9104eeba6614525944224c-4aedd511745c0e46.elb.ap-northeast-2.amazonaws.com
+#     secretName: tls-secret
+#   rules:
+#   - host: af1997ebca9104eeba6614525944224c-4aedd511745c0e46.elb.ap-northeast-2.amazonaws.com
+#     http:
+#       paths:
+#         - path: /mario
+#           pathType: Prefix
+#           backend:
+#             service:
+#               name: mario-service
+#               port:
+#                 number: 8080
+#         - path: /game
+#           pathType: Prefix
+#           backend:
+#             service:
+#               name: game-service
+#               port:
+#                 number: 80

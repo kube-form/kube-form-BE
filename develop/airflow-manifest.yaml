@@ -1,0 +1,6 @@
+ingress:
+  enabled: true
+  web:
+    path: "/"
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
