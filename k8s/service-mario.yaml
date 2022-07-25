@@ -3,11 +3,12 @@ kind: Service
 metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
-  name: mario_nlb
+  name: mario-nlb
 spec:
   ports:
-  - port: 8080
+  - port: 80
     protocol: TCP
     targetPort: web
-  selector: mario_label
+  selector:
+    app: mario-label
   type: LoadBalancer

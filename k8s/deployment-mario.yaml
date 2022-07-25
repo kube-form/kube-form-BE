@@ -6,11 +6,11 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: mario_label
+      app: mario-label
   template:
     metadata:
       labels:
-        app: mario_label
+        app: mario-label
     spec:
       containers:
       - image: pengbai/docker-supermario

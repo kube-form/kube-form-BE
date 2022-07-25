@@ -6,11 +6,11 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: game_label
+      app: game-label
   template:
     metadata:
       labels:
-        app: game_label
+        app: game-label
     spec:
       containers:
       - image: alexwhen/docker-2048

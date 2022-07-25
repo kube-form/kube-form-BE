@@ -3,11 +3,12 @@ kind: Service
 metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
-  name: game_nlb
+  name: game-nlb
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: web
-  selector: game_label
+  selector:
+    app: game-label
   type: LoadBalancer

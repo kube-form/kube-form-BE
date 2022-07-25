@@ -2,3 +2,4 @@
 *.code-workspace
 kubeconfig_*
 /sample
+/flask/file.txt
