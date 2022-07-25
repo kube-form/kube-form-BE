@@ -1,0 +1,1 @@
+aws eks update-kubeconfig --name kubeform-cluster --region ap-northeast-2
