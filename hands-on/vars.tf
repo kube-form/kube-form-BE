@@ -12,3 +12,8 @@ variable "vpc_cidr" {
   default     = "10.10.0.0/16"
   description = "AWS VPC CIDR range"
 }
+
+variable "node_group_num" {
+  default = 2
+  description = "kubernetes cluster node group numbers"
+}

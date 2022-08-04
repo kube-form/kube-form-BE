@@ -4,6 +4,6 @@ locals {
   vpc_cidr = var.vpc_cidr
   common_tags = {
     Environment = "dev"
-    Project     = "hands-on.cloud"
+    Project     = "kubeform"
   }
 }

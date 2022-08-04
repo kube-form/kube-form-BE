@@ -2,4 +2,7 @@
 *.code-workspace
 kubeconfig_*
 /sample
-/flask/file.txt
+file.txt
+/flask/output.json
+/flask/terraform.txt
+/flask/service.txt
