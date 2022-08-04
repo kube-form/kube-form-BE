@@ -44,7 +44,7 @@ resource "aws_eks_node_group" "private_node_group" {
   disk_size      = 8
 
   scaling_config {
-    desired_size = 2
+    desired_size = var.node_group_num
     max_size     = 6
     min_size     = 1
   }

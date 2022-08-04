@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from urllib import response
 from flask import Flask,Response,request  # 서버 구현을 위한 Flask 객체 import
 from flask_restx import Api,Resource  # Api 구현을 위한 Api 객체 import
 import flask_restx,os,subprocess,json,base64,boto3,time,yaml # pip install pyYAML
@@ -26,41 +27,50 @@ class Example(Resource):
 @api.route('/infra',  methods=['POST','DELETE']) 
 class Execute(Resource):
     def post(self): 
-        ##Access_Key_ID = os.environ['Access_Key_ID']
-        ##Secret_Access_Key = os.environ['Secret_Access_Key']
         response = Response(json.dumps("{'detail':'terraform apply command executed successfully.'}"), status=200, mimetype='application/json')
 
         params = request.get_json()
-        Required_information = ["user_id"]
-        # Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
+        # Required_information = ["user_id"]
+        Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key","node_group_num"]
         for i in Required_information :
             if(params.get(i) is None):
-                return Response(json.dumps("{'detail':'no attribute in request BODY.'}"), status=400, mimetype='application/json') #400 오류 핸들링
+                return Response(json.dumps({'detail':f"no {i} attribute in request BODY."}), status=400, mimetype='application/json') #400 오류 핸들링
 
         @response.call_on_close
         def on_close():
-            os.system(".sh//script.sh") # 쉘 스크립트 실행
+            os.environ["NodeGroupNum"] = f'{params["node_group_num"]}'
+            os.environ["KUBEFORM_ACCESS_KEY_ID"] = params["Encrypted_Access_Key_ID"]
+            os.environ["KUBEFORM_SECRET_ACCESS_KEY"] = params["Encrypted_Secret_Access_Key"]
+            os.system("./sh/script.sh") # 쉘 스크립트 실행
             print("terraform apply done!")
 
-            client.upload_file('terraform.txt','kube-form',params['user_id'] + '/status/terraform_output.txt') # 유저의 S3 버킷에 터미널 출력내용 저장
             client.upload_file('.././hands-on/terraform.tfstate','kube-form',params['user_id'] + '/status/terraform.tfstate') # 유저의 S3 버킷에 tfstate 내용 저장
 
         return response
 
     def delete(self):
+        response = Response(json.dumps({'detail':'deleted all AWS infra.'}), status=200, mimetype='application/json')
         params = request.get_json()
-        Required_information = ["user_id"]
-        # Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
+        # Required_information = ["user_id"]
+        Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
         for i in Required_information :
             if(params.get(i) is None):
-                return Response(json.dumps("{'detail':'no attribute in request BODY.'}"), status=400, mimetype='application/json') #400 오류 핸들링
-        #make.download_dir(boto3.client('s3'), boto3.resource('s3'), f"${params['user_id']}/status/cluster/",'.././k8s', 'kube-form')
-        os.system("./sh/kube-delete.sh")
+                return Response(json.dumps({'detail':f"no {i} attribute in request BODY."}), status=400, mimetype='application/json') #400 오류 핸들링
+       
+        @response.call_on_close
+        def on_close():
+             #aws configure
+            os.environ["KUBEFORM_ACCESS_KEY_ID"] = params["Encrypted_Access_Key_ID"]
+            os.environ["KUBEFORM_SECRET_ACCESS_KEY"] = params["Encrypted_Secret_Access_Key"]
+            os.system("./sh/cluster.sh")
+            os.system("./sh/kube-delete.sh")
 
-        client.download_file('kube-form',params['user_id'] + '/status/terraform.tfstate','.././hands-on/terraform.tfstate')
-        os.system("./sh/delete.sh")
-        
-        return Response(json.dumps({'detail':'deleted all AWS infra.'}), status=200, mimetype='application/json')
+            client.download_file('kube-form',params['user_id'] + '/status/terraform.tfstate','.././hands-on/terraform.tfstate')
+            os.system("./sh/delete.sh")
+            bucket = client.Bucket('kube-form')
+            bucket.objects.filter(Prefix=f"{params['user_id']}/").delete()
+
+        return response
         
 
 @api.route('/cluster',  methods=['POST','GET']) 
@@ -68,17 +78,19 @@ class Execute(Resource):
     def post(self): 
         # params = {"user_id" : "newdeal", "node_group_num" : 2 , "container" : [{"dockerURL" : "pengbai/docker-supermario", "port" : 8080 , "name" : "mario" , "replicas" : 2 },{"dockerURL" : "alexwhen/docker-2048", "port" : 80 , "name" : "game" , "replicas" : 2 }]}
         params = request.get_json()
-        Required_information = ["node_group_num","container","user_id"]
+        Required_information = ["node_group_num","container","user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
         Required_container = ["dockerURL","port","name","replicas"]
         for i in Required_information :
             if(params.get(i) is None):
-                return Response(json.dumps("{'detail':'no attribute in request BODY.'}"), status=400, mimetype='application/json') #400 오류 핸들링
+                return Response(json.dumps({'detail':f"no {i} attribute in request BODY." }), status=400, mimetype='application/json') #400 오류 핸들링
             if(i == "container"):
                 for j in Required_container:
                     for k in params['container']:
                         if(k.get(j) is None):
-                            return Response(json.dumps("{'detail':'no attribute in request BODY container type.'}"), status=400, mimetype='application/json') #400 오류 핸들링
+                            return Response(json.dumps({'detail':f"no {j} attribute in request BODY container type."}), status=400, mimetype='application/json') #400 오류 핸들링
         #aws configure
+        os.environ["KUBEFORM_ACCESS_KEY_ID"] = params["Encrypted_Access_Key_ID"]
+        os.environ["KUBEFORM_SECRET_ACCESS_KEY"] = params["Encrypted_Secret_Access_Key"]
         os.system("./sh/cluster.sh") # 쉘 스크립트 실행
         print("sh script done")
         make.make_yaml(params)
@@ -92,9 +104,6 @@ class Execute(Resource):
         for root,dirs,files in os.walk(path):
             for file in files:
                 client.upload_file(os.path.join(root,file),bucket,target+file)
-
-        #for f in os.listdir(path):
-            #os.remove(os.path.join(path, f))
 
         time.sleep(10)
 
@@ -112,9 +121,8 @@ class Execute(Resource):
         Required_information = ["user_id"]
         # Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
 
-        bucket = 'kube-form'
-        target = params['user_id'] + '/status/cluster/' + 'service.txt'
-        client.download_file(bucket,target,'service.txt')
+        client.download_file('kube-form',params['user_id'] + '/status/cluster/' + 'service.txt','service.txt')
+        response = {}
         entry_points =[]
 
         f= open('service.txt','r')
@@ -124,8 +132,19 @@ class Execute(Resource):
             if not line: break
             if line[:6] != '<none>': entry_points.append(line[:len(line)-1])
         f.close()
+
+        client.download_file('kube-form',params['user_id'] + '/status/terraform.tfstate','.././hands-on/terraform.tfstate')
+        response['entry_points'] = entry_points
+        os.environ["KUBEFORM_ACCESS_KEY_ID"] = params["Encrypted_Access_Key_ID"]
+        os.environ["KUBEFORM_SECRET_ACCESS_KEY"] = params["Encrypted_Secret_Access_Key"]
+        os.system("./sh/output.sh") # 쉘 스크립트 실행
+        print("sh script done")
+
+        with open("output.json", 'r') as file:
+            data = json.load(file)
+            response['cluster_data']=data
         
-        return Response(json.dumps({'detail':'terraform apply command executed successfully.', 'entry_points' : entry_points}), status=200, mimetype='application/json')
+        return Response(json.dumps({'detail':'terraform apply command executed successfully.', 'data' : response}), status=200, mimetype='application/json')
 
 
 if __name__ == "__main__":
