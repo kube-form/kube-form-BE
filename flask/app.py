@@ -7,6 +7,7 @@ import flask_restx,os,subprocess,json,base64,boto3,time,yaml # pip install pyYAM
 import make
 from matplotlib import container
 client = boto3.client('s3')
+resource = boto3.resource('s3')
 
 app = Flask(__name__)  # Flask 객체 선언, 파라미터로 어플리케이션 패키지의 이름을 넣어줌.
 api = Api(app)  # Flask 객체에 Api 객체 등록
@@ -67,7 +68,7 @@ class Execute(Resource):
 
             client.download_file('kube-form', f"{params['user_id']}/status/terraform.tfstate", '.././hands-on/terraform.tfstate')
             os.system("./sh/delete.sh")
-            bucket = client.Bucket('kube-form')
+            bucket = resource.Bucket('kube-form')
             bucket.objects.filter(Prefix=f"{params['user_id']}/").delete()
 
         return response
@@ -114,13 +115,13 @@ class Execute(Resource):
         return Response(json.dumps("{'detail':'terraform apply command executed successfully.'}"), status=200, mimetype='application/json')
 
     def get(self): 
-        ##Access_Key_ID = os.environ['Access_Key_ID']
-        ##Secret_Access_Key = os.environ['Secret_Access_Key']
-
         params = request.get_json()
         # Required_information = ["user_id"]
         Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
-
+        for i in Required_information :
+            if(params.get(i) is None):
+                return Response(json.dumps({'detail':f"no {i} attribute in request BODY."}), status=400, mimetype='application/json') #400 오류 핸들링
+            
         client.download_file('kube-form', f"{params['user_id']}/status/cluster/service.txt", 'service.txt')
         response = {}
         entry_points =[]
