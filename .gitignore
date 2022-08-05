@@ -1,7 +1,6 @@
 .vscode
 *.code-workspace
 kubeconfig_*
-/sample
 file.txt
 /flask/output.json
 /flask/terraform.txt
