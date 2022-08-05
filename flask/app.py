@@ -44,7 +44,7 @@ class Execute(Resource):
             os.system("./sh/script.sh") # 쉘 스크립트 실행
             print("terraform apply done!")
 
-            client.upload_file('.././hands-on/terraform.tfstate','kube-form',params['user_id'] + '/status/terraform.tfstate') # 유저의 S3 버킷에 tfstate 내용 저장
+            client.upload_file('.././hands-on/terraform.tfstate','kube-form',f"{params['user_id']}/status/terraform.tfstate") # 유저의 S3 버킷에 tfstate 내용 저장
 
         return response
 
@@ -65,7 +65,7 @@ class Execute(Resource):
             os.system("./sh/cluster.sh")
             os.system("./sh/kube-delete.sh")
 
-            client.download_file('kube-form',params['user_id'] + '/status/terraform.tfstate','.././hands-on/terraform.tfstate')
+            client.download_file('kube-form', f"{params['user_id']}/status/terraform.tfstate", '.././hands-on/terraform.tfstate')
             os.system("./sh/delete.sh")
             bucket = client.Bucket('kube-form')
             bucket.objects.filter(Prefix=f"{params['user_id']}/").delete()
@@ -118,10 +118,10 @@ class Execute(Resource):
         ##Secret_Access_Key = os.environ['Secret_Access_Key']
 
         params = request.get_json()
-        Required_information = ["user_id"]
-        # Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
+        # Required_information = ["user_id"]
+        Required_information = ["user_id","Encrypted_Access_Key_ID","Encrypted_Secret_Access_Key"]
 
-        client.download_file('kube-form',params['user_id'] + '/status/cluster/' + 'service.txt','service.txt')
+        client.download_file('kube-form', f"{params['user_id']}/status/cluster/service.txt", 'service.txt')
         response = {}
         entry_points =[]
 
