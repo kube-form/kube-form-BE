@@ -13,7 +13,12 @@ variable "vpc_cidr" {
   description = "AWS VPC CIDR range"
 }
 
+variable "instance_type" {
+  default     = "t3.medium"
+  description = "ec2 instance type"
+}
+
 variable "node_group_num" {
-  default = 2
+  default     = 2
   description = "kubernetes cluster node group numbers"
 }

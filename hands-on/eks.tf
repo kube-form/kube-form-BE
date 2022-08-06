@@ -40,7 +40,7 @@ resource "aws_eks_node_group" "private_node_group" {
 
   ami_type       = "AL2_x86_64"
   capacity_type  = "ON_DEMAND"
-  instance_types = ["t3.medium"]
+  instance_types = [var.instance_type]
   disk_size      = 8
 
   scaling_config {
