@@ -71,7 +71,7 @@ class Execute(Resource):
             client.download_file('kube-form', f"kubeSources/{params['user_id']}/status/terraform.tfstate", '.././hands-on/terraform.tfstate')
             os.system("./sh/delete.sh")
             bucket = resource.Bucket('kube-form')
-            bucket.objects.filter(Prefix=f"kubeSource/{params['user_id']}/").delete()
+            bucket.objects.filter(Prefix=f"kubeSources/{params['user_id']}/").delete()
 
         return response
         
