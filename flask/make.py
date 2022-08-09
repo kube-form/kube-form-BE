@@ -18,12 +18,24 @@ def download_dir(client, resource, dist, local, bucket):
 
 
 
-def make_yaml(params) : 
+def make_yaml(params) :
+
+    with open('.././sample/namespace.yaml') as f:
+        namespace_yaml = yaml.load(f, Loader=yaml.FullLoader)
+    
+    namespace_yaml['metadata']['name'] = params['user_id'] + '-ns'
+    namespace_yaml['metadata']['labels']['name'] = params['user_id'] + '-ns'
+
+    with open(f".././k8s/anamespace-{params['user_id']}.yaml", 'w') as file:
+        yaml.dump(namespace_yaml, file, default_flow_style=False)
+    
     for c in params['container']:
+        ##deployment
         with open('.././sample/deployment.yaml') as f:
             deployment_yaml = yaml.load(f, Loader=yaml.FullLoader)
         print("test")
         deployment_yaml['metadata']['name'] = c['name']
+        deployment_yaml['metadata']['namespace'] = params['user_id'] + '-ns'
         deployment_yaml['spec']['replicas'] = c['replicas']
         deployment_yaml['spec']['selector']['matchLabels']['app'] = c['name'] + '-label'
         deployment_yaml['spec']['template']['metadata']['labels']['app'] = c['name'] + '-label'
@@ -33,13 +45,16 @@ def make_yaml(params) :
 
         with open(f".././k8s/deployment-{c['name']}.yaml", 'w') as file:
             yaml.dump(deployment_yaml, file, default_flow_style=False)
-        
+        ##service
         with open('.././sample/service.yaml') as f:
             service_yaml = yaml.load(f, Loader=yaml.FullLoader)
         
         service_yaml['metadata']['name'] = c['name'] + '-nlb'
+        service_yaml['metadata']['namespace']= params['user_id'] + '-ns'
         service_yaml['spec']['selector']['app'] = c['name'] + '-label'
 
         with open(f".././k8s/service-{c['name']}.yaml", 'w') as file:
             yaml.dump(service_yaml, file, default_flow_style=False)
+        
+
 
