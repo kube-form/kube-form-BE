@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://kube-form.web.app/">
-        <img src="https://user-images.githubusercontent.com/31841502/183807820-a7edab99-8468-4178-a454-316f3de84d3a.png">
+        <img src="https://user-images.githubusercontent.com/31841502/183884426-e720a67d-0aad-4551-9c2f-c8b0cf8cac08.png">
     </a>
     <h3 align="center">
         <a href="">Visit the live app</a>
