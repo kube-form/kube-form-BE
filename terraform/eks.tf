@@ -1,8 +1,3 @@
-locals {
-  cluster_name   = "${local.prefix}-cluster"
-  aws_account_id = data.aws_caller_identity.current.account_id
-}
-
 data "aws_caller_identity" "current" {}
 
 # EKS Terraform - Cluster
