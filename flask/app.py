@@ -46,7 +46,7 @@ class Execute(Resource):
             os.system("./sh/script.sh") # 쉘 스크립트 실행
             print("terraform apply done!")
 
-            client.upload_file('.././hands-on/terraform.tfstate','kube-form',f"kubeSources/{params['user_id']}/status/terraform.tfstate") # 유저의 S3 버킷에 tfstate 내용 저장
+            client.upload_file('.././terraform/terraform.tfstate','kube-form',f"kubeSources/{params['user_id']}/status/terraform.tfstate") # 유저의 S3 버킷에 tfstate 내용 저장
 
         return response
 
@@ -68,7 +68,7 @@ class Execute(Resource):
             os.system("./sh/cluster.sh")
             os.system("./sh/kube-delete.sh")
 
-            client.download_file('kube-form', f"kubeSources/{params['user_id']}/status/terraform.tfstate", '.././hands-on/terraform.tfstate')
+            client.download_file('kube-form', f"kubeSources/{params['user_id']}/status/terraform.tfstate", '.././terraform/terraform.tfstate')
             os.system("./sh/delete.sh")
             bucket = resource.Bucket('kube-form')
             bucket.objects.filter(Prefix=f"kubeSources/{params['user_id']}/").delete()
@@ -133,7 +133,7 @@ class Execute(Resource):
             if line[:6] != '<none>': entry_points.append(line[:len(line)-1])
         f.close()
 
-        client.download_file('kube-form',f"kubeSources/{params['user_id']}/status/terraform.tfstate", '.././hands-on/terraform.tfstate')
+        client.download_file('kube-form',f"kubeSources/{params['user_id']}/status/terraform.tfstate", '.././terraform/terraform.tfstate')
         ret = []
         print(entry_points)
         for n in entry_points : 

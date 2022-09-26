@@ -1,28 +1,36 @@
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "3.2.0"
+  source = "terraform-aws-modules/vpc/aws"
 
-  name            = "kubeform-vpc"
-  cidr            = "10.0.0.0/16"
-  azs             = data.aws_availability_zones.available.names
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  name = local.vpc_name
+  cidr = local.vpc_cidr
+
+  azs = ["${var.aws_region}a", "${var.aws_region}b"]
+
+  public_subnets = [
+    cidrsubnet(local.vpc_cidr, 8, 0),
+    cidrsubnet(local.vpc_cidr, 8, 1)
+  ]
+
+  private_subnets = [
+    cidrsubnet(local.vpc_cidr, 8, 2),
+    cidrsubnet(local.vpc_cidr, 8, 3)
+  ]
 
   enable_nat_gateway   = true
-  single_nat_gateway   = true
+  single_nat_gateway   = false
   enable_dns_hostnames = true
 
-  tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-  }
+
+  tags = merge(
+    {
+      Name = local.vpc_name
+    },
+    local.common_tags
+  )
 
   public_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = "1"
+    "kubernetes.io/role/elb"                        = "1"
+    "kubernetes.io/cluster/${local.prefix}-cluster" = "owned"
   }
 
-  private_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"             = "1"
-  }
 }
